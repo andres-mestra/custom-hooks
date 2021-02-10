@@ -1,18 +1,70 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import mapboxgl from 'mapbox-gl'
+import { v4 } from 'uuid'
+import { Subject } from 'rxjs'
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_KEY
 
 export const useMapbox = (puntoInicial) => {
 
   const mapaDiv = useRef();
   //Resive el nodo html donde se renderiza el mapa
-  const setRef = useCallback( (node) => {
+  const setRef = useCallback((node) => {
     mapaDiv.current = node;
-  },[])
+  }, [])
 
+
+  //Referencia a los marcadores
+  const marcadores = useRef({});
+
+  //Observables de Rxjs
+  const movimientoMarcador = useRef( new Subject() );
+  const nuevoMarcador = useRef( new Subject () );
+
+
+  //Mapa y coords
   const mapa = useRef();
   const [coords, setCoords] = useState(puntoInicial)
 
+
+  //función para agregar marcadores
+  const addMarcador = useCallback(( event, id ) => {
+
+    const { lng, lat } = event?.lngLat || event;
+
+    const marker = new mapboxgl.Marker();
+    marker.id = id ?? v4() 
+    marker
+      .setLngLat([lng, lat]) //Cordenadas donde se va establecer
+      .addTo(mapa.current) // Agregar al mapa
+      .setDraggable(true) //Que se pueda mover
+
+    marcadores.current[marker.id] = marker;
+    
+    if( !id ){
+      nuevoMarcador.current.next({
+        id: marker.id,
+        lng,
+        lat,
+      });
+    }
+
+    //Eschuchar movimientos del marcador
+    marker.on('drag', ({ target }) => {
+      const { id } = target;
+      const { lng, lat } = target.getLngLat()
+      //Emitir los cambios del marcador
+      movimientoMarcador.current.next({ id, lng, lat,})
+    })
+
+  },[])
+
+
+  //función para actualizar la ubicación del marcador
+  const actualizarPosicion = useCallback(({ id, lng, lat }) => {
+    marcadores.current[id].setLngLat([ lng, lat ]);
+  },[])
+
+  //Crear mapa
   useEffect(() => {
     const map = new mapboxgl.Map({
       container: mapaDiv.current,
@@ -39,10 +91,20 @@ export const useMapbox = (puntoInicial) => {
 
   }, [])
 
+  //Agregar marcadores al hacer click
+  useEffect(() => {
+    mapa.current?.on('click', addMarcador )
+  }, [addMarcador])
+
 
   return {
     coords,
     setRef,
+    addMarcador,
+    actualizarPosicion,
+    marcadores,
+    nuevoMarcador$: nuevoMarcador.current,
+    movimientoMarcador$: movimientoMarcador.current,
   }
 
 }
