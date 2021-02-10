@@ -6,6 +6,11 @@ Custom hook de integración de  React con MapBox.
   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Mapbox_logo_2017.svg/1280px-Mapbox_logo_2017.svg.png" width="128" /></a>
 </a>
 
+Dependencias:
+```
+yarn add mapbox-gl uuid rxjs
+```
+
 Ejemplo:
 
 ```js
