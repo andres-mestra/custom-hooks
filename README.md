@@ -4,5 +4,6 @@
 - useLocalStorage: Guardar información en localStorage
 - useCounter: Manejar los estados y funciones de un counter
 - useForm: Obtener los valores de los inputs de un formulario y manejar sus estados
+- useNearScreen: Lazy loading para renderizar elementos cuando estén en el view.
 - useSocket: Conexión de cliente a servidor de socket.io
 - useMapbox: Integración de MapBox en react

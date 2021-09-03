@@ -3,5 +3,5 @@
 Ejemplo de uso:
 
 ```js
-const [value, setValue] = useCounter(initialValue);
+const [value, setValue] = useCounter(key, initialValue);
 ```
